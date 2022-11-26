@@ -1,18 +1,26 @@
+//window.scrollY : 현재 스크롤된 거리값 반환 (동적)
+//DOMel.offsetTop : 문서 세로 끝에서부터 현재 돔요소까지의 위치값 (정직);
+//window.scroll(x, y) : x, y축으로 스크롤 강제 이동
+
 const btn = document.querySelector('button');
-const box = document.querySelector('#box');
 
 btn.addEventListener('click', () => {
-	anime(box, {
-		prop: 'opacity',
-		value: 1,
+	anime(window, {
+		prop: 'scroll',
+		value: 4000,
 		duration: 1000,
 	});
 });
 
 function anime(selector, option) {
 	const startTime = performance.now();
-	//px, %, opacity값 모두 커버하기 위해서 parseFloat으로 속성값을 실수로 반환받음
-	let currentValue = parseFloat(getComputedStyle(selector)[option.prop]);
+	let currentValue = null;
+
+	//만약 옵션의 속성명이 scroll이면 scrollY값을 구하고
+	//그렇지 않으면 getComputedStyle의 반환값 저장
+	option.prop === 'scroll'
+		? (currentValue = selector.scrollY)
+		: (currentValue = parseFloat(getComputedStyle(selector)[option.prop]));
 
 	const isString = typeof option.value;
 	if (isString === 'string') {
@@ -33,13 +41,11 @@ function anime(selector, option) {
 		progress < 0 && (progress = 0);
 		progress > 1 && (progress = 1);
 		progress < 1 ? requestAnimationFrame(run) : option.callback && option.callback();
-
 		let result = currentValue + (option.value - currentValue) * progress;
 
-		//isString값이 문자열이면 뒤에 %적용, 그렇지않으면 px적용
 		if (isString === 'string') selector.style[option.prop] = `${result}%`;
-		//만약 속성명이 opacity이면 실수값을 바로 적용
 		else if (option.prop === 'opacity') selector.style[option.prop] = result;
+		else if (option.prop === 'scroll') selector.scroll(0, result);
 		else selector.style[option.prop] = `${result}px`;
 	}
 }
